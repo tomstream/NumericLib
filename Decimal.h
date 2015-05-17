@@ -65,13 +65,7 @@ bool operator==(const Decimal<n> &lhs, const Decimal<n> &rhs)
 template<size_t n>
 bool operator!=(const Decimal<n> &lhs, const Decimal<n> &rhs)
 {
-	return lhs.number != rhs.number;
-}
-
-template<size_t n>
-bool operator>(const Decimal<n> &lhs, const Decimal<n> &rhs)
-{
-	return lhs.number > rhs.number;
+	return !(lhs == rhs);
 }
 
 template<size_t n>
@@ -79,6 +73,14 @@ bool operator<(const Decimal<n> &lhs, const Decimal<n> &rhs)
 {
 	return lhs.number < rhs.number;
 }
+
+template<size_t n>
+bool operator>(const Decimal<n> &lhs, const Decimal<n> &rhs)
+{
+	return rhs < lhs;
+}
+
+
 
 template<size_t n>
 class Decimal

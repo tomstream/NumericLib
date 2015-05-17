@@ -1,6 +1,7 @@
 #pragma once
 #include<initializer_list>
 #include<iostream>
+using namespace std;
 
 template<typename T>
 class TwoDimensionMatrix
@@ -18,7 +19,6 @@ private:
 	size_t row;
 };
 
-
 template<typename T>
 class MatrixEquation
 {
@@ -29,6 +29,9 @@ public:
 	void initialize_V(initializer_list<T> l);
 	void getSolution_Guass();
 	void getSolution_Guass_CPC();
+	void getSolution_Jacobi_I(initializer_list<T> l,T precision);
+	void getSolution_GS_I(initializer_list<T> l, T precision);
+	void getSolution_SOR_I(initializer_list<T> l, T omega, T precision);
 private:
 	TwoDimensionMatrix<T> M;
 public:
@@ -234,4 +237,100 @@ void MatrixEquation<T>::getSolution_Guass_CPC()
 	}
 	delete[] q;
 
+}
+
+
+template<typename T>
+void MatrixEquation<T>::getSolution_Jacobi_I(initializer_list<T> l,T precision)
+{
+	T *x = new T[numVariable];
+	T *x_o = new T[numVariable];
+
+	auto iter = l.begin();
+	for (size_t i = 0; i < numVariable; i++)
+	{
+		if (iter != l.end())
+		x_o[i]=x[i] = *(iter++);
+		else x_o[i]=x[i] = 0;
+	}
+
+	T max,tmp,sum;
+	max = 1000000;
+	size_t times(0);
+	while (max > precision)
+	{
+		times++;
+		max = 0;
+		for (size_t i = 0; i < numVariable; i++)
+		{
+			 sum = 0;
+			for (size_t j = 0; j < numVariable; j++)
+			{
+				if (j!=i)
+					sum += M[i][j] * x_o[j];
+			}
+			x[i] = (v[i] - sum) / M[i][i];
+				if (max < abs(x[i] - x_o[i]))max = abs(x[i] - x_o[i]);
+		}
+		for (size_t i = 0; i < numVariable; i++)
+		{
+			x_o[i] = x[i];
+		}
+	
+	}
+	cout << "iterates " << times << " time(s)."<<endl;
+	for (size_t i = 0; i < numVariable; i++)
+	{
+		cout << 'x' << i + 1 << '=' << x[i] << endl;
+	}
+	
+	delete[] x;
+	delete[] x_o;
+}
+
+template<typename T>
+void MatrixEquation<T>::getSolution_GS_I(initializer_list<T> l, T precision)
+{
+	getSolution_SOR_I(l, 1, precision);
+}
+
+template<typename T>
+void MatrixEquation<T>::getSolution_SOR_I(initializer_list<T> l,T omega ,T precision)
+{
+	T *x = new T[numVariable];
+
+	auto iter = l.begin();
+	for (size_t i = 0; i < numVariable; i++)
+	{
+		if (iter != l.end())
+			x[i] = *(iter++);
+		else x[i] = 0;
+	}
+
+	T max, sum,tmp;
+	max = 1000000;
+	size_t times(0);
+	while (max > precision)
+	{
+		times++;
+		max = 0;
+		for (size_t i = 0; i < numVariable; i++)
+		{
+			tmp = x[i];
+			sum = 0;
+			for (size_t j = 0; j < numVariable; j++)
+			{
+				sum += M[i][j] * x[j];
+			}
+			x[i] = x[i]+omega*(v[i] - sum) / M[i][i];
+			if (max < abs(x[i] - tmp))max = abs(x[i] - tmp);
+		}
+	}
+	cout << "iterates " << times << " time(s)." << endl;
+	for (size_t i = 0; i < numVariable; i++)
+	{
+		cout << 'x' << i + 1 << '=' << x[i] << endl;
+	}
+
+	delete[] x;
 }
